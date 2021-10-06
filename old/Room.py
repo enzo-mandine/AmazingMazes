@@ -4,16 +4,17 @@ class Room:
     # By default each wall is closed and set to True
     # If the room have been visited we should not consider it anymore and set visited to True
 
-    def __init__(self):
-        self.name = "room"
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
         self.N = True
         self.S = True
         self.E = True
         self.W = True
         self.visited = False
 
-    def getName(self):
-        return self.name
+    def openDoor(self, x, y):
+        return [["x", x], ["self.x", self.x], ["y", y], ["self.y", self.y]]
 
     def getN(self):
         return self.N
