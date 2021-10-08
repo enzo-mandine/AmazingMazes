@@ -50,11 +50,6 @@ def walk(x, y):
         if visited[yy][xx] == 1:
             continue
 
-        for row in visited:
-            print(row)
-        print(' ')
-
-        input('continue ?')
         # 5) Remove the wall between the current cell and the chosen cell
         if xx == x:
             horizontal[max(y, yy)][x] = "#.."

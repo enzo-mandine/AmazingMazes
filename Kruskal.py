@@ -28,6 +28,8 @@
 # 2. If the edge connects two disjoint subsets:
 # a. Connect cells.
 # b. Join the subsets.
+import random
+
 
 def checkNodes(x, y, board):
     nodes = []
@@ -37,23 +39,83 @@ def checkNodes(x, y, board):
     E = x + 1
     W = x - 1
     if N in size:
-        nodes.append([x, N])
+        nodes.append((x, N))
     if S in size:
-        nodes.append([x, S])
+        nodes.append((x, S))
     if E in size:
-        nodes.append([E, y])
+        nodes.append((E, y))
     if W in size:
-        nodes.append([W, y])
+        nodes.append((W, y))
 
     return nodes
 
 
-v = []
-size = int(input('size :'))
-visited = [[0 for i in range(0, size)] for j in range(0, size)]
+size = int(input('dimension:'))
+mat = []
+m = {i: [] for i in range(0, size * size)}
 
-for i in range(size):
-    v.append([])
-    for j in range(size):
-        v[i].append(checkNodes(i, j, visited))
-        print v[i][j]
+print(m)
+
+# edges = []
+# size = int(input('size :'))
+# m = [[0 for i in range(0, size)] for j in range(0, size)]
+# ids = {}
+# n = 0
+# for i in range(size):
+#     ids.update({n: []})
+#     for j in range(size):
+#         data = checkNodes(i, j, m)
+#         prep = []
+#         for e in data:
+#             v = (i, j), e
+#             prep.append(((i, j), e))
+#             edges.append(((i, j), e))
+#
+#         ids[n] = prep
+#         n += 1
+#
+# for row in ids.items():
+#     selected = edges.pop(random.randrange(0, len(edges)))
+#     for cell in row[1]:
+#         for item in selected:
+#             if item in cell:
+#                 print(selected, cell)
+# print('cell:', row[0], 'neighbours:', row[1])
+
+# print edges
+# vectorList = []
+# for row in bag:
+#     for vector in row:
+#         vectorList.append(vector)
+#
+# maze = []
+# maze.append([vectorList[0]])
+# vectorList = vectorList[1:-1]
+# result = []
+# k = 0
+# for vector in vectorList:
+#     result.append([])
+#     first = (vector[0][0], vector[0][1])
+#     second = (vector[1][0], vector[1][1])
+#     i = 0
+#     for road in maze:
+#         j = 0
+#         for part in road:
+#             # print part[j]
+#             if first in part:
+#                 print 'first:', first, 'vector:', vector, 'part:', part, 'road:', road
+#                 maze.append(vector)
+#                 print 'first:', first, 'vector:', vector, 'part:', part, 'road:', road
+#             if second in part:
+#                 print 'second:', second, 'vector:', vector, 'part:', part, 'road:', road
+#                 # print 'first vector:', vector, 'road:', road, 'maze:', maze[i]
+#         j += 1
+#     i += 1
+#     vectorList.pop(k)
+# k += 1
+#
+# for row in result:
+#     if len(row):
+#         for a in row: print(a)
+#
+# for row in maze: print(row)
