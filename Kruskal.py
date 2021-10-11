@@ -42,11 +42,6 @@ class Matrix:
 
         return True
 
-    # find the sets that contain the squares
-    # that are connected by the wall
-    # if the two squares are in separate sets,
-    # then combine the sets and remove the
-    # wall that connected them
     def resolve(self):
         walls_copy = self.allWalls[:]
         random.shuffle(walls_copy)
