@@ -1,121 +1,97 @@
-# coding=utf-8
-
-# 1) create a forest F (a set of trees), where each vertex in the graph is a separate tree
-# 2) create a set S containing all the edges in the graph
-# 3) while S is nonempty and F is not yet spanning
-# 4)    remove an edge with minimum weight from S
-# 5)    if the removed edge connects two different trees then add it to the forest F,
-#       combining two trees into a single tree
-
-# At the termination of the algorithm,
-# the forest forms a minimum spanning forest of the graph.
-# If the graph is connected, the forest has a single component and forms a minimum spanning tree.
-
-# algorithm Kruskal(G) is
-#     F:= ∅
-#     for each v ∈ G.V do
-#         MAKE-SET(v)
-#     for each (u, v) in G.E ordered by weight(u, v), increasing do
-#         if FIND-SET(u) ≠ FIND-SET(v) then
-#             F:= F ∪ {(u, v)} ∪ {(v, u)}
-#             UNION(FIND-SET(u), FIND-SET(v))
-#     return F
-
-# Give a unique subset id for each existing cell.
-# Throw all of the edges into a big set.
-# While there is an edge of being handled in the set:
-# 1. Pull out one edge at random.
-# 2. If the edge connects two disjoint subsets:
-# a. Connect cells.
-# b. Join the subsets.
 import random
 
 
-def checkNodes(x, y, board):
-    nodes = []
-    size = range(len(board))
-    N = y + 1
-    S = y - 1
-    E = x + 1
-    W = x - 1
-    if N in size:
-        nodes.append((x, N))
-    if S in size:
-        nodes.append((x, S))
-    if E in size:
-        nodes.append((E, y))
-    if W in size:
-        nodes.append((W, y))
+class Matrix:
+    def __init__(self, size):
+        self.size = size
+        self.matrix = None
+        self.allRooms = None
+        self.allWalls = None
 
-    return nodes
+        self._setMatrix()
+        self._setAllRooms()
+        self._setAllWalls()
+
+    def _setAllWalls(self):
+        walls = [(x, y, x + 1, y)
+                 for x in range(self.size - 1)
+                 for y in range(self.size)]
+        walls.extend([(x, y, x, y + 1)
+                      for x in range(self.size)
+                      for y in range(self.size - 1)])
+        self.allWalls = walls
+        return True
+
+    def _setAllRooms(self):
+        allRooms = [{(x, y)}
+                    for x in range(self.size)
+                    for y in range(self.size)]
+        self.allRooms = allRooms
+        return True
+
+    def _setMatrix(self):
+        matrix = []
+        idx = 0
+        for y in range(0, self.size):
+            matrix.append([])
+            for x in range(0, self.size):
+                room = Room(y, x, idx)
+                matrix[y].append(room)
+                idx += 1
+        self.matrix = matrix
+
+        return True
+
+    # find the sets that contain the squares
+    # that are connected by the wall
+    # if the two squares are in separate sets,
+    # then combine the sets and remove the
+    # wall that connected them
+    def resolve(self):
+        walls_copy = self.allWalls[:]
+        random.shuffle(walls_copy)
+
+        for wall in walls_copy:
+            set_a = None
+            set_b = None
+
+            for s in self.allRooms:
+                if (wall[0], wall[1]) in s:
+                    set_a = s
+                if (wall[2], wall[3]) in s:
+                    set_b = s
+            if set_a is not set_b:
+                self.allRooms.remove(set_a)
+                self.allRooms.remove(set_b)
+                self.allRooms.append(set_a.union(set_b))
+                self.allWalls.remove(wall)
+    # end Matrix
+
+
+class Room:
+    def __init__(self, y, x, idx):
+        self.x = y
+        self.y = x
+        self.idx = idx
+        self.neighbours = None
+        self.isWall = {'n': True, 's': True, 'e': True, 'w': True}
+
+    def openWall(self, position):
+        if position == (self.x, self.y - 1):
+            self.isWall['n'] = False
+        if position == (self.x, self.y + 1):
+            self.isWall['s'] = False
+        if position == (self.x + 1, self.y):
+            self.isWall['e'] = False
+        if position == (self.x - 1, self.y):
+            self.isWall['w'] = False
+
+    def getPosition(self):
+        return self.x, self.y
+    # end Room
 
 
 size = int(input('dimension:'))
-mat = []
-m = {i: [] for i in range(0, size * size)}
-
-print(m)
-
-# edges = []
-# size = int(input('size :'))
-# m = [[0 for i in range(0, size)] for j in range(0, size)]
-# ids = {}
-# n = 0
-# for i in range(size):
-#     ids.update({n: []})
-#     for j in range(size):
-#         data = checkNodes(i, j, m)
-#         prep = []
-#         for e in data:
-#             v = (i, j), e
-#             prep.append(((i, j), e))
-#             edges.append(((i, j), e))
-#
-#         ids[n] = prep
-#         n += 1
-#
-# for row in ids.items():
-#     selected = edges.pop(random.randrange(0, len(edges)))
-#     for cell in row[1]:
-#         for item in selected:
-#             if item in cell:
-#                 print(selected, cell)
-# print('cell:', row[0], 'neighbours:', row[1])
-
-# print edges
-# vectorList = []
-# for row in bag:
-#     for vector in row:
-#         vectorList.append(vector)
-#
-# maze = []
-# maze.append([vectorList[0]])
-# vectorList = vectorList[1:-1]
-# result = []
-# k = 0
-# for vector in vectorList:
-#     result.append([])
-#     first = (vector[0][0], vector[0][1])
-#     second = (vector[1][0], vector[1][1])
-#     i = 0
-#     for road in maze:
-#         j = 0
-#         for part in road:
-#             # print part[j]
-#             if first in part:
-#                 print 'first:', first, 'vector:', vector, 'part:', part, 'road:', road
-#                 maze.append(vector)
-#                 print 'first:', first, 'vector:', vector, 'part:', part, 'road:', road
-#             if second in part:
-#                 print 'second:', second, 'vector:', vector, 'part:', part, 'road:', road
-#                 # print 'first vector:', vector, 'road:', road, 'maze:', maze[i]
-#         j += 1
-#     i += 1
-#     vectorList.pop(k)
-# k += 1
-#
-# for row in result:
-#     if len(row):
-#         for a in row: print(a)
-#
-# for row in maze: print(row)
+matrix = Matrix(size)
+matrix.resolve()
+print'walls:', matrix.allWalls
