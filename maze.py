@@ -38,7 +38,7 @@ def solveMaze(row,col):
     # Si aucune de ces options n'est valide on retourne à la case precedante
         solution[row][col] = "#"
         return False
-    return 0
+   
 
 # Lancer le jeu
 if solveMaze(0,0):
