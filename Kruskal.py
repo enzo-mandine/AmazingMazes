@@ -7,6 +7,7 @@ class Matrix:
         self.matrix = None
         self.allRooms = None
         self.allWalls = None
+        self.allRoomsObjects = []
 
         self._setMatrix()
         self._setAllRooms()
@@ -14,9 +15,43 @@ class Matrix:
 
         self._resolve()
 
+    def printMaze(self):
+        horizontal = [["####"] * size + ['#'] for _ in range(self.size + 1)]
+        vertical = [["#..."] * size + ['#'] for _ in range(self.size)] + [[]]
+
+        for i in range(self.size):
+            for j in range(self.size):
+                room = self.matrix[i][j]
+                walls = room.isWall
+                if walls["n"]:
+                    horizontal[i][j] = "####"
+                else:
+                    horizontal[i][j] = "#..."
+                if not walls["w"]:
+                    vertical[i][j] = "...."
+                else:
+                    vertical[i][j] = "#..."
+
+        # Setup first row
+        horizontal[0] = ['..##' + ('####' * (size - 1)) + '#']
+        s = ""
+        for i in vertical:
+            for j in range(0, len(i) - 1):
+                vertical[j][0] = '#...'
+
+        # Open start and end
+        vertical[0][0] = '....'
+        vertical[-2][-1] = '.'
+        horizontal[-1][-2] = '###.'
+        horizontal[-1][-1] = '.'
+
+        # print on string block
+        for (a, b) in zip(horizontal, vertical):
+            s += ''.join(a + ['\n'] + b + ['\n'])
+        print s
+
     def _setRoomWalls(self):
         for wall in self.allWalls:
-            print(wall)
             a = self._getRoom((wall[0], wall[1]))
             b = self._getRoom((wall[2], wall[3]))
             a.openWall(b.getPosition())
@@ -44,13 +79,11 @@ class Matrix:
 
     def _setMatrix(self):
         matrix = []
-        idx = 0
         for row in range(0, self.size):
             matrix.append([])
             for col in range(0, self.size):
-                room = Room(row, col, idx)
+                room = Room(row, col)
                 matrix[row].append(room)
-                idx += 1
         self.matrix = matrix
 
         return True
@@ -81,11 +114,9 @@ class Matrix:
 
 
 class Room:
-    def __init__(self, y, x, idx):
+    def __init__(self, y, x):
         self.y = y
         self.x = x
-        self.idx = idx
-        self.neighbours = None
         self.isWall = {'n': False, 's': False, 'e': False, 'w': False}
 
     def openWall(self, position):
@@ -106,8 +137,12 @@ class Room:
 
 size = int(input('dimension:'))
 matrix = Matrix(size)
-for row in matrix.matrix:
-    for col in row:
-        print col.getPosition(), col.isWall
+
+matrix.printMaze()
+
+# for row in matrix.matrix:
+#     for col in row:
+#         print col.getPosition(), col.isWall
 # print'walls:', matrix.allWalls
 # print'rooms:', matrix.allRooms
+# print'matrix:', matrix.matrix
