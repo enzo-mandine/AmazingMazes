@@ -20,10 +20,8 @@ sys.setrecursionlimit(15000)
 def checkNodes(x, y, board):
     nodes = []
     size = range(len(board))
-    N = y + 1
-    S = y - 1
-    E = x + 1
-    W = x - 1
+    N, S, E, W = y + 1, y - 1, x + 1, x - 1
+
     if N in size:
         nodes.append([x, N])
     if S in size:
@@ -80,4 +78,4 @@ horizontal[0][0] = '..#'
 horizontal[-1][-1] = '.'
 horizontal[-1][-2] = '##.'
 
-print make_maze(0, 0)
+print(make_maze(0, 0))

@@ -1,38 +1,108 @@
 from random import shuffle
 
 
+class Room:
+    """ A room of the maze with a position and 4 walls opened by default """
+
+    def __init__(self, y, x, size):
+        self.y = y
+        self.x = x
+        self.size = size
+        self.neighbours = []
+        self.visited = False
+        self.isWall = {'n': False, 's': False, 'e': False, 'w': False}
+
+        self.set_neighbours()
+
+    def set_neighbours(self) -> None:
+        """ push available neighbours position to attribute """
+        y = self.y
+        x = self.x
+        neighbours = []
+        size = range(self.size)
+        N, S, E, W = y + 1, y - 1, x + 1, x - 1
+        if N in size:
+            neighbours.append((x, N))
+        if S in size:
+            neighbours.append((x, S))
+        if E in size:
+            neighbours.append((E, y))
+        if W in size:
+            neighbours.append((W, y))
+
+        self.neighbours = neighbours
+
+        return None
+
+    def close_wall(self, position) -> None:
+        """ given a position, close the corresponding wall """
+
+        if position == (self.y - 1, self.x):
+            self.isWall['n'] = True
+        if position == (self.y + 1, self.x):
+            self.isWall['s'] = True
+        if position == (self.y, self.x + 1):
+            self.isWall['e'] = True
+        if position == (self.y, self.x - 1):
+            self.isWall['w'] = True
+
+        return None
+
+    def get_position(self) -> tuple:
+        """ return (y,x) of a room """
+
+        return self.y, self.x
+    # end Room
+
+
 class Labyrinth:
     """ The labyrinth, 2D array composed of Room object """
 
-    def __init__(self, size):
+    def __init__(self, size: int):
         # init vars
         self.size = size
         self.matrix = None
         self.rooms_sets = None
         self.all_walls = None
 
-        # run setup
+        # fill the maze with room object
         self._set_matrix()
+
+    # Is this really necessary ?
+
+    # def choose_engine(self, engine: str) -> None:
+    #     if engine.lower() == "kruskal":
+    #         self._build_kruskal_maze()
+    #     if engine.lower() == "backtrack":
+    #         # self._build_backtrack_maze()
+    #         pass
+    #
+    #     return None
+
+    def _run_kruskal_setup(self) -> None:
+        """ run needed setups for kruskal generation """
+
         self._set_all_rooms_sets()
         self._set_all_walls()
 
-        # build
-        self._build_kruskal_maze()
+        return None
 
-    def _set_matrix(self):
+    def _set_matrix(self) -> None:
         """ Create a matrix and fill it with Room Objects and store it in attribute """
+
         matrix = []
         for row in range(0, self.size):
             matrix.append([])
             for col in range(0, self.size):
-                room = Room(row, col)
+                room = Room(row, col, self.size)
                 matrix[row].append(room)
         self.matrix = matrix
 
         return None
 
-    def _set_all_rooms_sets(self):
+    def _set_all_rooms_sets(self) -> None:
         """ for each cell in the matrix, create a set (x,y) and store them in an attribute """
+
         allRooms = [{(x, y)}
                     for x in range(self.size)
                     for y in range(self.size)]
@@ -40,7 +110,7 @@ class Labyrinth:
 
         return None
 
-    def _set_all_walls(self):
+    def _set_all_walls(self) -> None:
         """ for each cell in the matrix, create a set of wall connecting cells like: (0,0,0,1) """
 
         walls = [(x, y, x + 1, y)
@@ -53,12 +123,12 @@ class Labyrinth:
 
         return None
 
-    def _get_room(self, pos):
-        """ retrive a room in the matrix from given (y,x) """
+    def _get_room(self, pos: list or tuple) -> Room:
+        """ retrieve a room in the matrix from given (y,x) """
 
         return self.matrix[pos[0]][pos[1]]
 
-    def _set_all_rooms_walls(self):
+    def _set_all_rooms_walls(self) -> None:
         """ for each wall left, open it in the corresponding Room """
 
         for wall in self.all_walls:
@@ -69,11 +139,15 @@ class Labyrinth:
 
         return None
 
-    def _build_kruskal_maze(self):
+    def _build_kruskal_maze(self) -> None:
         """ build the maze with Kruskal """
+
+        # Run setup
+        self._run_kruskal_setup()
 
         # get al the walls possible in the maze
         walls_copy = self.all_walls[:]
+
         # shuffle them to add randomness
         shuffle(walls_copy)
 
@@ -111,11 +185,11 @@ class Labyrinth:
 
         return None
 
-    def print_maze(self):
-        """ print the maze, '#' for wall, '..' for path """
+    def print_maze(self) -> None:
+        """ print the maze, '#'/'##' for wall, '..' for path """
 
-        horizontal = [["###"] * dimension + ['#'] for _ in range(self.size + 1)]
-        vertical = [["#.."] * dimension + ['#'] for _ in range(self.size)] + [[]]
+        vertical = [["###"] * dimension + ['#'] for _ in range(self.size + 1)]
+        horizontal = [["#.."] * dimension + ['#'] for _ in range(self.size)] + [[]]
 
         for i in range(self.size):
             for j in range(self.size):
@@ -123,57 +197,30 @@ class Labyrinth:
                 walls = room.isWall
 
                 if not walls["n"]:
-                    horizontal[i][j] = "#.."
+                    vertical[i][j] = "#.."
                 if not walls["w"]:
-                    vertical[i][j] = "..."
+                    horizontal[i][j] = "..."
 
         # Setup first row and opening
-        horizontal[0] = ['...' + ('###' * (dimension - 1)) + '#']
+        vertical[0] = ['...' + ('###' * (dimension - 1)) + '#']
         s = ""
-        for i in vertical:
+        for i in horizontal:
             for j in range(0, len(i) - 1):
-                vertical[j][0] = '#..'
+                horizontal[j][0] = '#..'
 
         # Open start and end
-        vertical[0][0] = '...'
-        vertical[-2][-1] = '.'
-        horizontal[-1][-2] = '#..'
-        horizontal[-1][-1] = '.'
+        horizontal[0][0] = '...'
+        horizontal[-2][-1] = '.'
+        vertical[-1][-2] = '#..'
+        vertical[-1][-1] = '.'
 
         # print a string block
-        for (a, b) in zip(horizontal, vertical):
+        for (a, b) in zip(vertical, horizontal):
             s += ''.join(a + ['\n'] + b + ['\n'])
-        print s
-    # end Matrix
-
-
-class Room:
-    """ A room of the maze with a position and 4 walls opened by default """
-
-    def __init__(self, y, x):
-        self.y = y
-        self.x = x
-        self.isWall = {'n': False, 's': False, 'e': False, 'w': False}
-
-    def close_wall(self, position):
-        """ given a position, close the corresponding wall """
-
-        if position == (self.y - 1, self.x):
-            self.isWall['n'] = True
-        if position == (self.y + 1, self.x):
-            self.isWall['s'] = True
-        if position == (self.y, self.x + 1):
-            self.isWall['e'] = True
-        if position == (self.y, self.x - 1):
-            self.isWall['w'] = True
+        print(s)
 
         return None
-
-    def get_position(self):
-        """ return (y,x) of a room """
-
-        return self.y, self.x
-    # end Room
+    # end Matrix
 
 
 dimension = 0
@@ -183,5 +230,7 @@ while dimension < 2:
         print('maze must be at least 2*2 :(\n')
 
 maze = Labyrinth(dimension)
-
+maze._build_kruskal_maze()
 maze.print_maze()
+
+print(maze.matrix[0][0].neighbours)
