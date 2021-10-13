@@ -43,6 +43,6 @@ def solveMaze(row,col):
 # Lancer le jeu
 if solveMaze(0,0):
     for i in solution:
-        print(i)
+        print(*i, sep = ' ')
 else :
     print("Il n'y a pas de solution")
