@@ -42,7 +42,7 @@ def walk(x, y):
     # 3) While the current cell has any unvisited neighbour cells
     d = checkNodes(x, y, visited)
     shuffle(d)
-
+    # print(d)
     # 4) Choose one of the unvisited neighbours
     for (xx, yy) in d:
         if visited[yy][xx] == 1:
@@ -79,3 +79,6 @@ horizontal[-1][-1] = '.'
 horizontal[-1][-2] = '##.'
 
 print(make_maze(0, 0))
+for row in visited:
+    for col in row:
+        print(col)

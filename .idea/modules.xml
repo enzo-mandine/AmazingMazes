@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/AmazingMazes.iml" filepath="$PROJECT_DIR$/.idea/AmazingMazes.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Runtrack python/.idea/Runtrack python.iml" filepath="$PROJECT_DIR$/../Runtrack python/.idea/Runtrack python.iml" />
     </modules>
   </component>
 </project>

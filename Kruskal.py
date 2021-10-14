@@ -1,40 +1,49 @@
 from random import shuffle
+import sys
+
+sys.setrecursionlimit(15000)
+
+
+# Improvement : merge print method :'(
 
 
 class Room:
     """ A room of the maze with a position and 4 walls opened by default """
 
-    def __init__(self, y, x, size):
+    def __init__(self, y: int, x: int, size: int):
         self.y = y
         self.x = x
         self.size = size
         self.neighbours = []
-        self.visited = False
+        self.is_visited = False
         self.isWall = {'n': False, 's': False, 'e': False, 'w': False}
+        self.value = 0
 
         self.set_neighbours()
 
     def set_neighbours(self) -> None:
         """ push available neighbours position to attribute """
+
         y = self.y
         x = self.x
         neighbours = []
         size = range(self.size)
         N, S, E, W = y + 1, y - 1, x + 1, x - 1
+
         if N in size:
-            neighbours.append((x, N))
+            neighbours.append((N, x))
         if S in size:
-            neighbours.append((x, S))
+            neighbours.append((S, x))
         if E in size:
-            neighbours.append((E, y))
+            neighbours.append((y, E))
         if W in size:
-            neighbours.append((W, y))
+            neighbours.append((y, W))
 
         self.neighbours = neighbours
 
         return None
 
-    def close_wall(self, position) -> None:
+    def close_wall(self, position: tuple or list) -> None:
         """ given a position, close the corresponding wall """
 
         if position == (self.y - 1, self.x):
@@ -65,19 +74,26 @@ class Labyrinth:
         self.rooms_sets = None
         self.all_walls = None
 
+        # backtracking draw
+        self.horizontal = None
+        self.vertical = None
+
         # fill the maze with room object
         self._set_matrix()
+        self._choose_engine()
 
-    # Is this really necessary ?
+    def _choose_engine(self) -> None:
+        print('select your maze engine:\n1: Backtracking\n2: Kruskal')
+        engine = int(input(''))
 
-    # def choose_engine(self, engine: str) -> None:
-    #     if engine.lower() == "kruskal":
-    #         self._build_kruskal_maze()
-    #     if engine.lower() == "backtrack":
-    #         # self._build_backtrack_maze()
-    #         pass
-    #
-    #     return None
+        if engine == 1:
+            self._build_backtracking_maze(0, 0)
+            self._print_backtracking_maze()
+        if engine == 2:
+            self._build_kruskal_maze()
+            self._print_kruskal_maze()
+
+        return None
 
     def _run_kruskal_setup(self) -> None:
         """ run needed setups for kruskal generation """
@@ -139,7 +155,46 @@ class Labyrinth:
 
         return None
 
-    def _build_kruskal_maze(self) -> None:
+    def _build_backtracking_maze(self, y: int, x: int) -> bool:
+        if not self.horizontal and not self.vertical:
+            self.horizontal = [["###"] * self.size + ['#'] for _ in range(self.size + 1)]
+            self.vertical = [["#.."] * self.size + ['#'] for _ in range(self.size)] + [[]]
+
+        room = self._get_room((y, x))
+        room.is_visited = True
+
+        d = room.neighbours
+        shuffle(d)
+
+        for (yy, xx) in d:
+            room_n = self._get_room((yy, xx))
+            if room_n.is_visited:
+                continue
+
+            if xx == x:
+                self.horizontal[max(y, yy)][x] = "#.."
+            if yy == y:
+                self.vertical[y][max(x, xx)] = "..."
+            # room_n.isWall['n'] = True
+
+            self._build_backtracking_maze(yy, xx)
+
+        return True
+
+    def _print_backtracking_maze(self) -> None:
+        self.vertical[0][0] = '...'
+        self.vertical[-2][-1] = '.'
+        self.horizontal[0][0] = '..#'
+        self.horizontal[-1][-1] = '.'
+        self.horizontal[-1][-2] = '##.'
+        s = ""
+        for (a, b) in zip(self.horizontal, self.vertical):
+            s += ''.join(a + ['\n'] + b + ['\n'])
+        print(s)
+
+        return None
+
+    def _build_kruskal_maze(self) -> bool:
         """ build the maze with Kruskal """
 
         # Run setup
@@ -176,16 +231,15 @@ class Labyrinth:
 
                 # merge them
                 self.rooms_sets.append(set_a.union(set_b))
-
                 # make a path
                 self.all_walls.remove(wall)
 
         # once we are done, setup all the object in the matrix for printing
         self._set_all_rooms_walls()
 
-        return None
+        return True
 
-    def print_maze(self) -> None:
+    def _print_kruskal_maze(self) -> None:
         """ print the maze, '#'/'##' for wall, '..' for path """
 
         vertical = [["###"] * dimension + ['#'] for _ in range(self.size + 1)]
@@ -230,7 +284,5 @@ while dimension < 2:
         print('maze must be at least 2*2 :(\n')
 
 maze = Labyrinth(dimension)
-maze._build_kruskal_maze()
-maze.print_maze()
 
 print(maze.matrix[0][0].neighbours)
