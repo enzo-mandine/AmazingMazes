@@ -168,6 +168,7 @@ class Labyrinth:
 
         for (yy, xx) in d:
             room_n = self._get_room((yy, xx))
+            room_n.value = room.value + 1
             if room_n.is_visited:
                 continue
 
@@ -180,6 +181,12 @@ class Labyrinth:
             self._build_backtracking_maze(yy, xx)
 
         return True
+
+    # def step(self, k):
+    #     for row in range(self.size):
+    #         for col in range(self.size):
+    #             if self.matrix[row][col].value == k:
+    #                 pass
 
     def _print_backtracking_maze(self) -> None:
         self.vertical[0][0] = '...'
@@ -242,8 +249,8 @@ class Labyrinth:
     def _print_kruskal_maze(self) -> None:
         """ print the maze, '#'/'##' for wall, '..' for path """
 
-        vertical = [["###"] * dimension + ['#'] for _ in range(self.size + 1)]
-        horizontal = [["#.."] * dimension + ['#'] for _ in range(self.size)] + [[]]
+        vertical = [["##"] * dimension + ['#'] for _ in range(self.size + 1)]
+        horizontal = [["#."] * dimension + ['#'] for _ in range(self.size)] + [[]]
 
         for i in range(self.size):
             for j in range(self.size):
@@ -251,21 +258,21 @@ class Labyrinth:
                 walls = room.isWall
 
                 if not walls["n"]:
-                    vertical[i][j] = "#.."
+                    vertical[i][j] = "#."
                 if not walls["w"]:
-                    horizontal[i][j] = "..."
+                    horizontal[i][j] = ".."
 
         # Setup first row and opening
-        vertical[0] = ['...' + ('###' * (dimension - 1)) + '#']
+        vertical[0] = ['..' + ('##' * (dimension - 1)) + '#']
         s = ""
         for i in horizontal:
             for j in range(0, len(i) - 1):
-                horizontal[j][0] = '#..'
+                horizontal[j][0] = '#.'
 
         # Open start and end
-        horizontal[0][0] = '...'
+        horizontal[0][0] = '..'
         horizontal[-2][-1] = '.'
-        vertical[-1][-2] = '#..'
+        vertical[-1][-2] = '#.'
         vertical[-1][-1] = '.'
 
         # print a string block
@@ -285,4 +292,5 @@ while dimension < 2:
 
 maze = Labyrinth(dimension)
 
-print(maze.matrix[0][0].neighbours)
+
+

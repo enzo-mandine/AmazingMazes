@@ -79,6 +79,3 @@ horizontal[-1][-1] = '.'
 horizontal[-1][-2] = '##.'
 
 print(make_maze(0, 0))
-for row in visited:
-    for col in row:
-        print(col)
