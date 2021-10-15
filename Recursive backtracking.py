@@ -8,6 +8,7 @@ def make_maze(width,height):
     horizental = [["###"] * width + ['#'] for _ in range(height + 1)]
     vertical[0][0] = '...'
     horizental[-1][-1] = '.'
+    horizental[-1][-2] = '##.'
 
 
     def move(row,col):
