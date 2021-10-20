@@ -1,7 +1,9 @@
+from sys import setrecursionlimit
 from random import shuffle
-import sys
+from re import split
+from PIL import Image
 
-sys.setrecursionlimit(15000)
+setrecursionlimit(15000)
 
 
 # Improvement : merge print method :'(
@@ -83,6 +85,8 @@ class Labyrinth:
         self._choose_engine()
 
     def _choose_engine(self) -> None:
+        """ allow user to select his maze creation algorithm """
+
         print('select your maze engine:\n1: Backtracking\n2: Kruskal')
         engine = int(input(''))
 
@@ -156,6 +160,8 @@ class Labyrinth:
         return None
 
     def _build_backtracking_maze(self, y: int, x: int) -> bool:
+        """ user backtracking to build the maze """
+
         if not self.horizontal and not self.vertical:
             self.horizontal = [["###"] * self.size + ['#'] for _ in range(self.size + 1)]
             self.vertical = [["#.."] * self.size + ['#'] for _ in range(self.size)] + [[]]
@@ -176,19 +182,14 @@ class Labyrinth:
                 self.horizontal[max(y, yy)][x] = "#.."
             if yy == y:
                 self.vertical[y][max(x, xx)] = "..."
-            # room_n.isWall['n'] = True
 
             self._build_backtracking_maze(yy, xx)
 
         return True
 
-    # def step(self, k):
-    #     for row in range(self.size):
-    #         for col in range(self.size):
-    #             if self.matrix[row][col].value == k:
-    #                 pass
-
     def _print_backtracking_maze(self) -> None:
+        """ print backtracking maze """
+
         self.vertical[0][0] = '...'
         self.vertical[-2][-1] = '.'
         self.horizontal[0][0] = '..#'
@@ -249,8 +250,8 @@ class Labyrinth:
     def _print_kruskal_maze(self) -> None:
         """ print the maze, '#'/'##' for wall, '..' for path """
 
-        vertical = [["##"] * dimension + ['#'] for _ in range(self.size + 1)]
-        horizontal = [["#."] * dimension + ['#'] for _ in range(self.size)] + [[]]
+        vertical = [["##"] * self.size + ['#'] for _ in range(self.size + 1)]
+        horizontal = [["#."] * self.size + ['#'] for _ in range(self.size)] + [[]]
 
         for i in range(self.size):
             for j in range(self.size):
@@ -263,7 +264,7 @@ class Labyrinth:
                     horizontal[i][j] = ".."
 
         # Setup first row and opening
-        vertical[0] = ['..' + ('##' * (dimension - 1)) + '#']
+        vertical[0] = ['..' + ('##' * (self.size - 1)) + '#']
         s = ""
         for i in horizontal:
             for j in range(0, len(i) - 1):
@@ -284,13 +285,133 @@ class Labyrinth:
     # end Matrix
 
 
-dimension = 0
-while dimension < 2:
-    dimension = int(input('size:'))
-    if dimension < 2:
-        print('maze must be at least 2*2 :(\n')
+class Solver:
 
-maze = Labyrinth(dimension)
+    def __init__(self):
+
+        self.nodes = None
+        self.edges = None
+        self.draw = None
+        self.weight = None
+        self.path = []
+        self.end = None
+
+        self.setup()
+        self.weight_graph()
+
+    def setup(self):
+        """ open the maze file and parse it """
+
+        file = open('maze2.mz', 'r')
+        read = file.read()
+        file.close()
+        lab = split(r"\n", read)
+
+        draw = []
+        for row in lab:
+            if len(row) > 0:
+                draw.append(list(row))
+
+        m = []
+        for i in range(len(draw)):
+            m.append([])
+            for j in range(len(draw[0])):
+                m[i].append(0)
+
+        m[0][0] = 1
+        self.weight = m
+        self.draw = draw
+        self.end = (len(self.weight) - 1, len(self.weight[0]) - 1)
+        self.path.append(self.end)
+
+    def weight_graph(self):
+        """ put value inside every visitable cell, cell_value = previous_cell_value + 1 """
+
+        k = 0
+        while self.weight[-1][-1] == 0:
+            k += 1
+            for i in range(len(self.weight)):
+                for j in range(len(self.weight[i])):
+                    if int(self.weight[i][j]) == k:
+                        if i > 0 and self.weight[i - 1][j] == 0 and self.draw[i - 1][j] == ".":
+                            self.weight[i - 1][j] = k + 1
+                        if j > 0 and self.weight[i][j - 1] == 0 and self.draw[i][j - 1] == ".":
+                            self.weight[i][j - 1] = k + 1
+                        if i < len(self.weight) - 1 and self.weight[i + 1][j] == 0 and self.draw[i + 1][j] == ".":
+                            self.weight[i + 1][j] = k + 1
+                        if j < len(self.weight[i]) - 1 and self.weight[i][j + 1] == 0 and self.draw[i][j + 1] == ".":
+                            self.weight[i][j + 1] = k + 1
+
+    def get_path(self):
+        """ extract the path """
+
+        y, x = self.end
+        while self.weight[-1][-1] > 1:
+
+            if y > 0 and self.weight[y - 1][x] == self.weight[-1][-1] - 1:
+                y, x = y - 1, x
+                self.path.append((y, x))
+                self.weight[-1][-1] -= 1
+            elif x > 0 and self.weight[y][x - 1] == self.weight[-1][-1] - 1:
+                y, x = y, x - 1
+                self.path.append((y, x))
+                self.weight[-1][-1] -= 1
+            elif y < len(self.weight) - 1 and self.weight[y + 1][x] == self.weight[-1][-1] - 1:
+                y, x = y + 1, x
+                self.path.append((y, x))
+                self.weight[-1][-1] -= 1
+            elif x < len(self.weight[y]) - 1 and self.weight[y][x + 1] == self.weight[-1][-1] - 1:
+                y, x = y, x + 1
+                self.path.append((y, x))
+                self.weight[-1][-1] -= 1
+
+        return self.path
+
+    def get_png(self):
+        """ place visited status and path status in final drawing and create the png """
+
+        self.get_path()
+        for i in range(0, len(self.weight)):
+            for j in range(0, len(self.weight[0])):
+                if self.weight[i][j] != 0:
+                    self.draw[i][j] = "*"
+                if (i, j) in self.path:
+                    self.draw[i][j] = 'o'
+
+        pil_data = []
+        for i in range(0, len(self.draw)):
+            for j in range(0, len(self.draw[i])):
+                if self.draw[i][j] == 'o':
+                    pil_data.append((255, 0, 255))
+                if self.draw[i][j] == '#':
+                    pil_data.append((0, 0, 0))
+                if self.draw[i][j] == '.':
+                    pil_data.append((255, 255, 255))
+                if self.draw[i][j] == '*':
+                    pil_data.append((0, 0, 255))
+
+        image = Image.new('RGB', (len(self.draw), len(self.draw[0])))
+        image.putdata(pil_data)
+
+        file_name = ""
+        while file_name == "":
+            file_name = str(input('Choisissez un nom de fichier:'))
+
+        image.save(file_name + '.png')
 
 
+def __main__():
+    """ Run """
 
+    dimension = 0
+    while dimension < 2:
+        dimension = int(input('size:'))
+        if dimension < 2:
+            print('maze must be at least 2*2 :(\n')
+
+    Labyrinth(dimension)
+    return None
+
+
+if __name__ == "__main__":
+    __main__()
